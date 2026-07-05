@@ -77,7 +77,7 @@ export default function Home() {
           <div className="hero-art">
             <img
               src="/cover.png"
-              alt="Book cover: The Muslim Girl — A Guide to Puberty and Purity, by Fatima Ezahara Muhammad"
+              alt="Book cover: The Muslim Girl — A Guide to Puberty and Purity, by Fatima Ezzahra Muhammad"
             />
           </div>
         </section>
@@ -92,7 +92,7 @@ export default function Home() {
         <section className="course">
           <p className="eyebrow">Course One — opening soon</p>
           <h2>The Muslim Girl: A Guide to Puberty and Purity</h2>
-          <p className="byline">by Fatima Ezahara Muhammad</p>
+          <p className="byline">by Fatima Ezzahra Muhammad</p>
           <p className="course-copy">
             A gentle, fully illustrated course for girls ages 8 and up — before
             the questions get harder to ask. Across twelve chapters, your
