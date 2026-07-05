@@ -65,6 +65,7 @@ export default async function handler(req, res) {
       html: `
         <div style="background:#FBF6EF;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;color:#3D2B33;">
           <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;border:1px solid #F3D9E3;">
+            <p style="text-align:center;margin:0 0 10px;"><img src="https://thevirtuousgirl.com/logo.png" width="64" height="64" alt="The Virtuous Girl" style="border-radius:50%;" /></p>
             <p style="text-align:center;letter-spacing:2px;font-size:11px;color:#B8923E;margin:0 0 18px;"><strong>THE VIRTUOUS GIRL</strong></p>
             <h1 style="font-family:Georgia,serif;color:#5A2438;font-size:24px;text-align:center;margin:0 0 16px;">Your Mother&rsquo;s Checklist is here</h1>
             <p style="font-size:15px;line-height:1.6;margin:0 0 14px;">Assalamu alaikum,</p>
