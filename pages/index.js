@@ -53,6 +53,9 @@ export default function Home() {
             <span className="wordmark-main">The Virtuous Girl</span>
             <span className="wordmark-arabic">تربية نساء الفضيلة</span>
           </div>
+          <a className="signin" href="/course">
+            Member sign-in
+          </a>
         </header>
 
         {/* ===== Hero ===== */}
@@ -262,8 +265,26 @@ export default function Home() {
 
         /* Header */
         .header {
-          padding: 28px 0 8px;
-          text-align: center;
+          padding: 22px 0 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .signin {
+          font-weight: 700;
+          font-size: 0.92rem;
+          color: #8e3b53;
+          text-decoration: none;
+          border: 2px solid #8e3b53;
+          border-radius: 999px;
+          padding: 9px 20px;
+          white-space: nowrap;
+        }
+        .signin:hover {
+          background: #8e3b53;
+          color: #fbf6ef;
         }
         .wordmark-main {
           font-family: "Fraunces", serif;
@@ -377,7 +398,7 @@ export default function Home() {
         .course-copy {
           max-width: 44em;
           margin: 0 auto 18px;
-          text-align: left;
+        
         }
         .price {
           margin-top: 10px;
