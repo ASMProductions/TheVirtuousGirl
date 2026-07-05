@@ -54,6 +54,8 @@ export default function CourseOne() {
         <title>{`${course.title} — The Virtuous Girl`}</title>
         <meta name="robots" content="noindex" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="/logo.png" />
+        <link rel="icon" type="image/png" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.bunny.net" />
         <link
           href="https://fonts.bunny.net/css?family=fraunces:600,700|nunito-sans:400,600,700"
@@ -66,6 +68,10 @@ export default function CourseOne() {
           <Link href="/course" className="back">← The Library</Link>
         </header>
 
+        <img className="pagelogo" src="/logo.png" alt="The Virtuous Girl logo" />
+        <div className="logo-row">
+          <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
+        </div>
         <p className="eyebrow">Course One</p>
         <h1>{course.title}</h1>
         <p className="byline">by {course.author}</p>
@@ -109,6 +115,15 @@ export default function CourseOne() {
         .page { max-width: 760px; margin: 0 auto; padding: 0 24px 80px; }
         .header { padding: 22px 0 8px; }
         .back { font-weight: 700; color: #8e3b53; text-decoration: none; }
+        .logo-row { text-align: center; margin-top: 6px; }
+        .logo { width: 56px; height: 56px; border-radius: 50%; }
+        .pagelogo {
+          display: block;
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          margin: 10px auto 0;
+        }
         .eyebrow {
           text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem;
           font-weight: 700; color: #b8923e; text-align: center; margin-top: 14px;

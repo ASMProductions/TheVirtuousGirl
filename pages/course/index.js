@@ -88,6 +88,8 @@ export default function CourseHome({ authed }) {
         <title>The Course — The Virtuous Girl</title>
         <meta name="robots" content="noindex" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="/logo.png" />
+        <link rel="icon" type="image/png" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.bunny.net" />
         <link
           href="https://fonts.bunny.net/css?family=fraunces:600,700|nunito-sans:400,600,700"
@@ -97,11 +99,15 @@ export default function CourseHome({ authed }) {
 
       <div className="page">
         <header className="header">
-          <Link href="/" className="home-link">The Virtuous Girl</Link>
+          <Link href="/" className="home-link">
+            <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
+            <span>The Virtuous Girl</span>
+          </Link>
         </header>
 
         {!authed ? (
           <section className="gate">
+            <img className="pagelogo" src="/logo.png" alt="The Virtuous Girl logo" />
             <h1>{course.title}</h1>
             <p className="byline">by {course.author}</p>
             <p className="gate-copy">
@@ -143,6 +149,7 @@ export default function CourseHome({ authed }) {
           </section>
         ) : (
           <section className="dash">
+            <img className="pagelogo" src="/logo.png" alt="The Virtuous Girl logo" />
             <p className="eyebrow">The Library</p>
             <h1>Your Courses</h1>
             <p className="progress-line">
@@ -198,10 +205,19 @@ export default function CourseHome({ authed }) {
       <style jsx>{`
         .page { max-width: 760px; margin: 0 auto; padding: 0 24px 80px; }
         .header { padding: 26px 0 10px; text-align: center; }
+        .pagelogo {
+          display: block;
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          margin: 14px auto 0;
+        }
         .home-link {
           font-family: "Fraunces", serif; font-weight: 700; font-size: 1.2rem;
           color: #8e3b53; text-decoration: none;
+          display: inline-flex; align-items: center; gap: 10px;
         }
+        .logo { width: 44px; height: 44px; border-radius: 50%; }
         h1 {
           font-family: "Fraunces", serif; font-weight: 600;
           font-size: clamp(1.6rem, 4vw, 2.2rem); color: #5a2438;
