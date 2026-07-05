@@ -161,6 +161,9 @@ export default function Home() {
             womanhood
           </p>
           <p className="footer-small">
+            <a href="/course">Member sign-in</a>
+          </p>
+          <p className="footer-small">
             © {new Date().getFullYear()} ASM Productions LLC. All rights
             reserved.
           </p>
