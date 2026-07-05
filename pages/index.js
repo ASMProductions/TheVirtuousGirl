@@ -39,6 +39,7 @@ export default function Home() {
           content="A course platform for Muslim mothers raising daughters — from girlhood to womanhood. Course One: The Muslim Girl, A Guide to Puberty and Purity."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.bunny.net" />
         <link
           href="https://fonts.bunny.net/css?family=fraunces:600,700|nunito-sans:400,600,700"
@@ -50,8 +51,11 @@ export default function Home() {
         {/* ===== Header ===== */}
         <header className="header">
           <div className="wordmark">
-            <span className="wordmark-main">The Virtuous Girl</span>
-            <span className="wordmark-arabic">تربية نساء الفضيلة</span>
+            <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
+            <div>
+              <span className="wordmark-main">The Virtuous Girl</span>
+              <span className="wordmark-arabic">تربية نساء الفضيلة</span>
+            </div>
           </div>
           <a className="signin" href="/course">
             Member sign-in
@@ -285,6 +289,17 @@ export default function Home() {
         .signin:hover {
           background: #8e3b53;
           color: #fbf6ef;
+        }
+        .wordmark {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-align: left;
+        }
+        .logo {
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
         }
         .wordmark-main {
           font-family: "Fraunces", serif;
