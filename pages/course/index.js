@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import course from "../../data/course";
+import catalog from "../../data/catalog";
 
 async function redisGet(key) {
   const r = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
@@ -169,6 +170,35 @@ export default function CourseHome({ authed }) {
                 </li>
               ))}
             </ol>
+
+            <p className="eyebrow">Coming to the Library</p>
+            <h2 className="lib-head">
+              Every course below is included in your enrollment
+            </h2>
+            <div className="lib">
+              {catalog.map((c) => (
+                <div key={c.title} className="lib-card">
+                  <p className="lib-soon">Coming soon</p>
+                  <p className="lib-title">{c.title}</p>
+                  <p className="lib-title-ar">{c.titleAr}</p>
+                  <p className="lib-blurb">{c.blurb}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="eyebrow">Resource Library</p>
+            <div className="lib">
+              <div className="lib-card">
+                <p className="lib-soon">Coming soon</p>
+                <p className="lib-title">The Resource Library</p>
+                <p className="lib-title-ar">مكتبة الموارد</p>
+                <p className="lib-blurb">
+                  Printables, du&rsquo;a cards, cycle trackers, conversation
+                  guides for mothers, and reference material for every course
+                  &mdash; all in one place.
+                </p>
+              </div>
+            </div>
           </section>
         )}
       </div>
@@ -246,6 +276,26 @@ export default function CourseHome({ authed }) {
         .mod-titles { display: flex; flex-direction: column; }
         .mod-title { font-weight: 700; color: #5a2438; }
         .mod-title-ar { font-size: 0.9rem; color: #6e5e8e; }
+        /* library */
+        .lib-head {
+          font-family: "Fraunces", serif; font-weight: 600; font-size: 1.15rem;
+          color: #5a2438; text-align: center; margin-bottom: 16px;
+        }
+        .lib {
+          display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 14px; margin-bottom: 10px;
+        }
+        .lib-card {
+          background: #fff; border: 1px dashed #d9b9c6; border-radius: 14px;
+          padding: 18px; opacity: 0.92;
+        }
+        .lib-soon {
+          text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.68rem;
+          font-weight: 700; color: #b8923e; margin-bottom: 6px;
+        }
+        .lib-title { font-weight: 700; color: #5a2438; }
+        .lib-title-ar { font-size: 0.9rem; color: #6e5e8e; margin-bottom: 6px; }
+        .lib-blurb { font-size: 0.9rem; color: #3d2b33; }
       `}</style>
     </>
   );
