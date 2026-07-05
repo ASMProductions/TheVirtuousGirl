@@ -105,11 +105,67 @@ export default function Home() {
           </p>
           <p className="course-copy">
             She reads it like a storybook. You get the daughter who was prepared
-            &mdash; and the conversations you were hoping to have.
+            &mdash; and the conversations you were hoping to have. And this is
+            only the beginning: enrollment covers every course we add &mdash;
+            from first hygiene through the kitchen, character, and the journey
+            to womanhood.
           </p>
-          <p className="price">
-            One-time enrollment · <strong>$27</strong> · lifetime family access
-          </p>
+          {process.env.NEXT_PUBLIC_STRIPE_LINK_MONTHLY &&
+          process.env.NEXT_PUBLIC_STRIPE_LINK_ANNUAL &&
+          process.env.NEXT_PUBLIC_STRIPE_LINK_LIFETIME ? (
+            <div className="pricing">
+              <div className="plan">
+                <p className="plan-name">Monthly</p>
+                <p className="plan-price">
+                  <strong>$9</strong>/month
+                </p>
+                <p className="plan-copy">
+                  Every course, every chapter, as the library grows. Cancel
+                  anytime.
+                </p>
+                <a
+                  className="button"
+                  href={process.env.NEXT_PUBLIC_STRIPE_LINK_MONTHLY}
+                >
+                  Enroll monthly
+                </a>
+              </div>
+              <div className="plan">
+                <p className="plan-name">Annual</p>
+                <p className="plan-price">
+                  <strong>$97</strong>/year
+                </p>
+                <p className="plan-copy">
+                  One payment a year, full access to everything. The sensible
+                  choice.
+                </p>
+                <a
+                  className="button"
+                  href={process.env.NEXT_PUBLIC_STRIPE_LINK_ANNUAL}
+                >
+                  Enroll yearly
+                </a>
+              </div>
+              <div className="plan featured">
+                <p className="plan-name">Lifetime</p>
+                <p className="plan-price">
+                  <strong>$197</strong> once
+                </p>
+                <p className="plan-copy">
+                  One payment. Every course, forever &mdash; for your whole
+                  family.
+                </p>
+                <a
+                  className="button"
+                  href={process.env.NEXT_PUBLIC_STRIPE_LINK_LIFETIME}
+                >
+                  Get lifetime access
+                </a>
+              </div>
+            </div>
+          ) : (
+            <p className="price">Enrollment opens soon.</p>
+          )}
         </section>
 
         <div className="divider" aria-hidden="true">
@@ -327,6 +383,45 @@ export default function Home() {
           margin-top: 10px;
           color: #8e3b53;
           font-size: 1.05rem;
+        }
+        .pricing {
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-top: 26px;
+        }
+        .plan {
+          background: #fff;
+          border: 1px solid #f3d9e3;
+          border-radius: 16px;
+          padding: 26px 28px;
+          width: 300px;
+          text-align: center;
+        }
+        .plan.featured {
+          border: 2px solid #b8923e;
+        }
+        .plan-name {
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #b8923e;
+          margin-bottom: 8px;
+        }
+        .plan-price {
+          font-family: "Fraunces", serif;
+          font-size: 1.3rem;
+          color: #5a2438;
+          margin-bottom: 8px;
+        }
+        .plan-price strong {
+          font-size: 2rem;
+        }
+        .plan-copy {
+          font-size: 0.95rem;
+          margin-bottom: 18px;
         }
 
         /* Capture */
