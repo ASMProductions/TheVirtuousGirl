@@ -116,7 +116,7 @@ export default function Chapter({ idx }) {
 
       <div className="page">
         <header className="header">
-          <Link href="/course" className="back">← All chapters</Link>
+          <Link href="/course/the-muslim-girl" className="back">← All chapters</Link>
           <div className="controls">
             <button
               className={lang === "en" ? "toggle active" : "toggle"}

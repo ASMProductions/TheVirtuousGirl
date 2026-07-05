@@ -58,7 +58,7 @@ export default function Certificate() {
 
       <div className="page">
         <div className="tools no-print">
-          <Link href="/course" className="back">← All chapters</Link>
+          <Link href="/course/the-muslim-girl" className="back">← All chapters</Link>
           <div className="name-entry">
             <label htmlFor="girlname">Her name:</label>
             <input

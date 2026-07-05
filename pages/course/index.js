@@ -143,39 +143,22 @@ export default function CourseHome({ authed }) {
           </section>
         ) : (
           <section className="dash">
-            <p className="eyebrow">Course One</p>
-            <h1>{course.title}</h1>
-            <p className="byline">by {course.author}</p>
+            <p className="eyebrow">The Library</p>
+            <h1>Your Courses</h1>
             <p className="progress-line">
-              {completed} of {course.modules.length} chapters complete
+              {completed} of {course.modules.length} chapters complete in Course One
             </p>
-            {allDone && (
-              <p className="cert-invite">
-                Masha&rsquo;Allah — every chapter is done!{" "}
-                <Link href="/course/certificate">Claim your certificate →</Link>
-              </p>
-            )}
-            <ol className="modules">
-              {course.modules.map((m) => (
-                <li key={m.slug} className={done[m.slug] ? "mod done" : "mod"}>
-                  <Link href={`/course/${m.slug}`} className="mod-link">
-                    <span className="mod-check" aria-hidden="true">
-                      {done[m.slug] ? "✓" : m.num}
-                    </span>
-                    <span className="mod-titles">
-                      <span className="mod-title">{m.title}</span>
-                      <span className="mod-title-ar">{m.titleAr}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
 
-            <p className="eyebrow">Coming to the Library</p>
-            <h2 className="lib-head">
-              Every course below is included in your enrollment
-            </h2>
             <div className="lib">
+              <Link href="/course/the-muslim-girl" className="lib-card active">
+                <p className="lib-soon live">Enrolled — continue</p>
+                <p className="lib-title">{course.title}</p>
+                <p className="lib-title-ar">{course.titleAr}</p>
+                <p className="lib-blurb">
+                  12 illustrated chapters for girls 8 and up — her body, her
+                  care, her deen, her confidence.
+                </p>
+              </Link>
               {catalog.map((c) => (
                 <div key={c.title} className="lib-card">
                   <p className="lib-soon">Coming soon</p>
@@ -289,6 +272,12 @@ export default function CourseHome({ authed }) {
           background: #fff; border: 1px dashed #d9b9c6; border-radius: 14px;
           padding: 18px; opacity: 0.92;
         }
+        .lib-card.active {
+          border: 2px solid #8e3b53; background: #fdf1f5; opacity: 1;
+          text-decoration: none; display: block;
+        }
+        .lib-card.active:hover { background: #f9e3eb; }
+        .lib-soon.live { color: #8e3b53; }
         .lib-soon {
           text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.68rem;
           font-weight: 700; color: #b8923e; margin-bottom: 6px;
