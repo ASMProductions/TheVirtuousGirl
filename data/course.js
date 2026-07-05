@@ -1,10 +1,10 @@
 // data/course.js — The Muslim Girl: A Guide to Puberty and Purity
-// Course One on The Virtuous Girl. Bilingual (en/ar) content by Fatima Ezahara Muhammad.
+// Course One on The Virtuous Girl. Bilingual (en/ar) content by Fatima Ezzahra Muhammad.
 
 const course = {
   title: "The Muslim Girl: A Guide to Puberty and Purity",
   titleAr: "الفتاة المسلمة: دليل البلوغ والطهارة",
-  author: "Fatima Ezahara Muhammad",
+  author: "Fatima Ezzahra Muhammad",
   modules: [
     // ---------------------------------------------------------------- 1
     {
