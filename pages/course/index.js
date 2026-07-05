@@ -99,11 +99,11 @@ export default function CourseHome({ authed }) {
 
       <div className="page">
         <header className="header">
-          <Link href="/" className="home-link">
-            <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
-            <span>The Virtuous Girl</span>
-          </Link>
+          <Link href="/" className="home-link">The Virtuous Girl</Link>
         </header>
+        <div className="logo-row">
+          <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
+        </div>
 
         {!authed ? (
           <section className="gate">
@@ -215,9 +215,9 @@ export default function CourseHome({ authed }) {
         .home-link {
           font-family: "Fraunces", serif; font-weight: 700; font-size: 1.2rem;
           color: #8e3b53; text-decoration: none;
-          display: inline-flex; align-items: center; gap: 10px;
         }
-        .logo { width: 44px; height: 44px; border-radius: 50%; }
+        .logo-row { text-align: center; margin-top: 10px; }
+        .logo { width: 84px; height: 84px; border-radius: 50%; }
         h1 {
           font-family: "Fraunces", serif; font-weight: 600;
           font-size: clamp(1.6rem, 4vw, 2.2rem); color: #5a2438;

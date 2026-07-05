@@ -116,7 +116,7 @@ export default function CourseOne() {
         .header { padding: 22px 0 8px; }
         .back { font-weight: 700; color: #8e3b53; text-decoration: none; }
         .logo-row { text-align: center; margin-top: 6px; }
-        .logo { width: 56px; height: 56px; border-radius: 50%; }
+        .logo { width: 84px; height: 84px; border-radius: 50%; }
         .pagelogo {
           display: block;
           width: 72px;
