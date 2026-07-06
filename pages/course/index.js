@@ -1,92 +1,44 @@
-// pages/course/index.js — course home: unlock screen or chapter list
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Head from "next/head";
-import Link from "next/link";
-import course from "../../data/course";
-import catalog from "../../data/catalog";
+import catalog from "../data/catalog";
 
-async function redisGet(key) {
-  const r = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(["GET", key]),
-  });
-  if (!r.ok) return null;
-  const data = await r.json();
-  return data.result;
-}
-
-export async function getServerSideProps({ req }) {
-  const cookie = req.headers.cookie || "";
-  const match = cookie.match(/(?:^|;\s*)tvg_session=([^;]+)/);
-  let authed = false;
-  if (match) {
-    try {
-      const identity = await redisGet(`tvg:session:${match[1]}`);
-      authed = Boolean(identity);
-    } catch {
-      authed = false;
-    }
-  }
-  return { props: { authed } };
-}
-
-export default function CourseHome({ authed }) {
-  const [mode, setMode] = useState("code"); // code | email
-  const [value, setValue] = useState("");
-  const [status, setStatus] = useState("idle");
+export default function Home() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | sending | done | error
   const [message, setMessage] = useState("");
-  const [done, setDone] = useState({});
 
-  useEffect(() => {
-    if (!authed) return;
-    fetch("/api/progress")
-      .then((r) => (r.ok ? r.json() : { done: {} }))
-      .then((d) => setDone(d.done || {}))
-      .catch(() => {});
-  }, [authed]);
-
-  async function unlock(e) {
-    e.preventDefault();
+  async function joinList(e) {
+    if (e) e.preventDefault();
     if (status === "sending") return;
     setStatus("sending");
     setMessage("");
     try {
-      const body = mode === "code" ? { code: value } : { email: value };
-      const r = await fetch("/api/auth", {
+      const r = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ email }),
       });
       const data = await r.json();
       if (!r.ok) {
         setStatus("error");
-        setMessage(data.error || "Something went wrong.");
+        setMessage(data.error || "Something went wrong. Please try again.");
         return;
       }
-      if (mode === "code") {
-        window.location.reload();
-      } else {
-        setStatus("sent");
-        setMessage(data.message || "Check your inbox for your sign-in link.");
-      }
+      setStatus("done");
     } catch {
       setStatus("error");
       setMessage("Something went wrong. Please try again.");
     }
   }
 
-  const completed = course.modules.filter((m) => done[m.slug]).length;
-  const allDone = completed === course.modules.length;
-
   return (
     <>
       <Head>
-        <title>The Course — The Virtuous Girl</title>
-        <meta name="robots" content="noindex" />
+        <title>The Virtuous Girl — Raising Women of Virtue</title>
+        <meta
+          name="description"
+          content="A course platform for Muslim mothers raising daughters — from girlhood to womanhood. Course One: The Muslim Girl, A Guide to Puberty and Purity."
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" type="image/png" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.bunny.net" />
@@ -97,200 +49,635 @@ export default function CourseHome({ authed }) {
       </Head>
 
       <div className="page">
+        {/* ===== Header ===== */}
         <header className="header">
-          <Link href="/" className="home-link">The Virtuous Girl</Link>
+          <div className="wordmark">
+            <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
+            <div>
+              <span className="wordmark-main">The Virtuous Girl</span>
+              <span className="wordmark-arabic">تربية نساء الفضيلة</span>
+            </div>
+          </div>
+          <a className="signin" href="/course">
+            Member sign-in
+          </a>
         </header>
-        <div className="logo-row">
-          <img className="logo" src="/logo.png" alt="The Virtuous Girl logo" />
+
+        {/* ===== Hero ===== */}
+        <section className="hero">
+          <div className="hero-text">
+            <p className="eyebrow">From girlhood to womanhood</p>
+            <h1>
+              She is going to grow up.
+              <br />
+              Help her do it with grace.
+            </h1>
+            <p className="lede">
+              The Virtuous Girl is a home for mothers raising daughters — courses
+              that prepare a girl for her body, her home, her character, and her
+              faith, taught with the warmth of a big sister and the grounding of
+              Islamic teaching.
+            </p>
+            <a className="button" href="#checklist">
+              Get the free Mother&rsquo;s Checklist
+            </a>
+          </div>
+          <div className="hero-art">
+            <img
+              src="/cover.png"
+              alt="Book cover: The Muslim Girl — A Guide to Puberty and Purity, by Fatima Ezzahra Muhammad"
+            />
+          </div>
+        </section>
+
+        <div className="divider" aria-hidden="true">
+          <span className="rule" />
+          <span className="star">✦</span>
+          <span className="rule" />
         </div>
 
-        {!authed ? (
-          <section className="gate">
-            <h1>{course.title}</h1>
-            <p className="byline">by {course.author}</p>
-            <p className="gate-copy">
-              This course is for enrolled families. Sign in with your access
-              code, or with the email you enrolled with.
-            </p>
-            <div className="tabs">
-              <button
-                className={mode === "code" ? "tab active" : "tab"}
-                onClick={() => { setMode("code"); setValue(""); setStatus("idle"); setMessage(""); }}
-              >
-                I have a code
-              </button>
-              <button
-                className={mode === "email" ? "tab active" : "tab"}
-                onClick={() => { setMode("email"); setValue(""); setStatus("idle"); setMessage(""); }}
-              >
-                Sign in by email
-              </button>
-            </div>
-            {status === "sent" ? (
-              <p className="sent">{message}</p>
-            ) : (
-              <form className="form" onSubmit={unlock}>
-                <input
-                  type={mode === "email" ? "email" : "text"}
-                  required
-                  placeholder={mode === "code" ? "Access code" : "Your email address"}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  aria-label={mode === "code" ? "Access code" : "Email address"}
-                />
-                <button className="button" type="submit" disabled={status === "sending"}>
-                  {status === "sending" ? "One moment…" : "Open the course"}
-                </button>
-              </form>
-            )}
-            {status === "error" && <p className="error">{message}</p>}
-          </section>
-        ) : (
-          <section className="dash">
-            <p className="eyebrow">The Library</p>
-            <h1>Your Courses</h1>
-            <p className="progress-line">
-              {completed} of {course.modules.length} chapters complete in Course One
-            </p>
-
-            <div className="lib">
-              <Link href="/course/the-muslim-girl" className="lib-card active">
-                <p className="lib-soon live">Enrolled — continue</p>
-                <p className="lib-title">{course.title}</p>
-                <p className="lib-title-ar">{course.titleAr}</p>
-                <p className="lib-blurb">
-                  12 illustrated chapters for girls 8 and up — her body, her
-                  care, her deen, her confidence.
+        {/* ===== Course One ===== */}
+        <section className="course">
+          <p className="eyebrow">Course One — ready for her today</p>
+          <h2>The Muslim Girl: A Guide to Puberty and Purity</h2>
+          <p className="byline">by Fatima Ezzahra Muhammad</p>
+          <p className="course-copy">
+            A gentle, fully illustrated course for girls ages 8 and up — before
+            the questions get harder to ask. Across twelve chapters, your
+            daughter learns what is happening to her body, how to care for
+            herself with safe and natural products, how purity and prayer work
+            during her cycle, and how to step into this season with confidence
+            instead of shame. Every chapter ends with a short review and a
+            &ldquo;Talk to Mama&rdquo; question that brings the conversation
+            back to you.
+          </p>
+          <p className="course-copy">
+            She reads it like a storybook. You get the daughter who was prepared
+            &mdash; and the conversations you were hoping to have. And this is
+            only the beginning: enrollment covers every course we add &mdash;
+            from first hygiene through the kitchen, character, and the journey
+            to womanhood.
+          </p>
+          {process.env.NEXT_PUBLIC_STRIPE_LINK_MONTHLY &&
+          process.env.NEXT_PUBLIC_STRIPE_LINK_ANNUAL &&
+          process.env.NEXT_PUBLIC_STRIPE_LINK_LIFETIME ? (
+            <div className="pricing">
+              <div className="plan">
+                <p className="plan-name">Monthly</p>
+                <p className="plan-price">
+                  <strong>$9</strong>/month
                 </p>
-              </Link>
-              {catalog.map((c) => (
-                <div key={c.title} className="lib-card">
-                  <p className="lib-soon">Coming soon</p>
-                  <p className="lib-title">{c.title}</p>
-                  <p className="lib-title-ar">{c.titleAr}</p>
-                  <p className="lib-blurb">{c.blurb}</p>
-                </div>
-              ))}
-            </div>
-
-            <p className="eyebrow">Resource Library</p>
-            <div className="lib">
-              <div className="lib-card">
-                <p className="lib-soon">Coming soon</p>
-                <p className="lib-title">The Resource Library</p>
-                <p className="lib-title-ar">مكتبة الموارد</p>
-                <p className="lib-blurb">
-                  Printables, du&rsquo;a cards, cycle trackers, conversation
-                  guides for mothers, and reference material for every course
-                  &mdash; all in one place.
+                <p className="plan-copy">
+                  Every course, every chapter, as the library grows. Cancel
+                  anytime.
                 </p>
+                <a
+                  className="button"
+                  href={process.env.NEXT_PUBLIC_STRIPE_LINK_MONTHLY}
+                >
+                  Enroll monthly
+                </a>
+              </div>
+              <div className="plan">
+                <p className="plan-name">Annual</p>
+                <p className="plan-price">
+                  <strong>$97</strong>/year
+                </p>
+                <p className="plan-copy">
+                  One payment a year, full access to everything. The sensible
+                  choice.
+                </p>
+                <a
+                  className="button"
+                  href={process.env.NEXT_PUBLIC_STRIPE_LINK_ANNUAL}
+                >
+                  Enroll yearly
+                </a>
+              </div>
+              <div className="plan featured">
+                <p className="plan-name">Lifetime</p>
+                <p className="plan-price">
+                  <strong>$197</strong> once
+                </p>
+                <p className="plan-copy">
+                  One payment. Every course, forever &mdash; for your whole
+                  family.
+                </p>
+                <a
+                  className="button"
+                  href={process.env.NEXT_PUBLIC_STRIPE_LINK_LIFETIME}
+                >
+                  Get lifetime access
+                </a>
               </div>
             </div>
-          </section>
-        )}
+          ) : (
+            <p className="price">
+              Enrollment: <strong>$9</strong>/month · <strong>$97</strong>/year ·{" "}
+              <strong>$197</strong> lifetime
+            </p>
+          )}
+        </section>
+
+        <div className="divider" aria-hidden="true">
+          <span className="rule" />
+          <span className="star">✦</span>
+          <span className="rule" />
+        </div>
+
+        {/* ===== The Library ===== */}
+        <section className="library">
+          <p className="eyebrow">The Library</p>
+          <h2>One enrollment. Every course.</h2>
+          <p className="library-note">
+            Your enrollment covers the whole library &mdash; from her first
+            hygiene lessons to marriage, motherhood, and running a home. New
+            courses are added to the library throughout the year.
+          </p>
+          <div className="lib-grid">
+            <div className="lib-card available">
+              <p className="lib-tag">Available now</p>
+              <p className="lib-name">The Muslim Girl: A Guide to Puberty and Purity</p>
+              <p className="lib-name-ar">الفتاة المسلمة: دليل البلوغ والطهارة</p>
+              <p className="lib-desc">
+                12 illustrated chapters for girls 8 and up &mdash; her body, her
+                care, her deen, her confidence.
+              </p>
+            </div>
+            {catalog.map((c) => (
+              <div key={c.title} className="lib-card">
+                <p className="lib-name">{c.title}</p>
+                <p className="lib-name-ar">{c.titleAr}</p>
+                <p className="lib-desc">{c.blurb}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="divider" aria-hidden="true">
+          <span className="rule" />
+          <span className="star">✦</span>
+          <span className="rule" />
+        </div>
+
+        {/* ===== The Library ===== */}
+        <section className="library">
+          <p className="eyebrow">The Library</p>
+          <h2>One enrollment. Her whole journey.</h2>
+          <p className="course-copy library-lede">
+            The Virtuous Girl is built as a complete path from girlhood to
+            womanhood. Your enrollment includes every course in the library as
+            it grows — beginning with Course One, available now.
+          </p>
+          <div className="cat">
+            {catalog.map((c) => (
+              <div key={c.title} className="cat-card">
+                <p className="cat-title">{c.title}</p>
+                <p className="cat-title-ar">{c.titleAr}</p>
+                <p className="cat-blurb">{c.blurb}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="divider" aria-hidden="true">
+          <span className="rule" />
+          <span className="star">✦</span>
+          <span className="rule" />
+        </div>
+
+        {/* ===== Lead magnet ===== */}
+        <section className="capture" id="checklist">
+          <h2>Is she closer than you think?</h2>
+          <p className="capture-copy">
+            Get <em>The Mother&rsquo;s Checklist</em> — the five signs your
+            daughter is approaching her first period, and exactly what to have
+            ready before the day comes. Free, and we&rsquo;ll let you know the
+            moment enrollment opens.
+          </p>
+
+          {status === "done" ? (
+            <p className="thanks">
+              You&rsquo;re on the list. Watch your inbox for the checklist.
+            </p>
+          ) : (
+            <form className="form" onSubmit={joinList}>
+              <input
+                type="email"
+                required
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                aria-label="Email address"
+              />
+              <button
+                className="button"
+                type="submit"
+                disabled={status === "sending"}
+              >
+                {status === "sending" ? "Sending…" : "Send me the checklist"}
+              </button>
+            </form>
+          )}
+          {status === "error" && <p className="error">{message}</p>}
+        </section>
+
+        {/* ===== Footer ===== */}
+        <footer className="footer">
+          <p>
+            The Virtuous Girl · Raising women of virtue, from girlhood to
+            womanhood
+          </p>
+          <p className="footer-small">
+            <a href="/course">Member sign-in</a>
+          </p>
+          <p className="footer-small">
+            © {new Date().getFullYear()} ASM Productions LLC. All rights
+            reserved.
+          </p>
+        </footer>
       </div>
 
       <style jsx global>{`
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-          background: #fbf6ef; color: #3d2b33;
-          font-family: "Nunito Sans", sans-serif; font-size: 17px; line-height: 1.65;
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
         }
-        a { color: inherit; }
-        :focus-visible { outline: 3px solid #b8923e; outline-offset: 2px; }
+        html,
+        body {
+          background: #fbf6ef;
+          color: #3d2b33;
+          font-family: "Nunito Sans", sans-serif;
+          font-size: 17px;
+          line-height: 1.65;
+        }
+        img {
+          max-width: 100%;
+          display: block;
+        }
+        a {
+          color: inherit;
+        }
+        :focus-visible {
+          outline: 3px solid #b8923e;
+          outline-offset: 2px;
+        }
       `}</style>
+
       <style jsx>{`
-        .page { max-width: 760px; margin: 0 auto; padding: 0 24px 80px; }
-        .header { padding: 26px 0 10px; text-align: center; }
-        .logo-row { text-align: center; margin-top: 10px; }
-        .logo { width: 84px; height: 84px; border-radius: 50%; }
-        .home-link {
-          font-family: "Fraunces", serif; font-weight: 700; font-size: 1.2rem;
-          color: #8e3b53; text-decoration: none;
+        .page {
+          max-width: 1060px;
+          margin: 0 auto;
+          padding: 0 24px;
+        }
+
+        /* Header */
+        .header {
+          padding: 22px 0 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .signin {
+          font-weight: 700;
+          font-size: 0.92rem;
+          color: #8e3b53;
+          text-decoration: none;
+          border: 2px solid #8e3b53;
+          border-radius: 999px;
+          padding: 9px 20px;
+          white-space: nowrap;
+        }
+        .signin:hover {
+          background: #8e3b53;
+          color: #fbf6ef;
+        }
+        .wordmark {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-align: left;
+        }
+        .logo {
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+        }
+        .wordmark-main {
+          font-family: "Fraunces", serif;
+          font-weight: 700;
+          font-size: 1.5rem;
+          color: #8e3b53;
+          display: block;
+        }
+        .wordmark-arabic {
+          display: block;
+          font-size: 0.85rem;
+          color: #6e5e8e;
+          margin-top: 2px;
+        }
+
+        /* Hero */
+        .hero {
+          display: flex;
+          align-items: center;
+          gap: 48px;
+          padding: 48px 0 56px;
+        }
+        .hero-text {
+          flex: 1.2;
+        }
+        .hero-art {
+          flex: 0.8;
+        }
+        .hero-art img {
+          border-radius: 10px;
+          box-shadow: 0 18px 40px rgba(142, 59, 83, 0.18);
+        }
+        .eyebrow {
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #b8923e;
+          margin-bottom: 14px;
         }
         h1 {
-          font-family: "Fraunces", serif; font-weight: 600;
-          font-size: clamp(1.6rem, 4vw, 2.2rem); color: #5a2438;
-          margin: 10px 0 6px; text-align: center;
+          font-family: "Fraunces", serif;
+          font-weight: 600;
+          font-size: clamp(2rem, 4.4vw, 3rem);
+          line-height: 1.15;
+          color: #5a2438;
+          margin-bottom: 18px;
         }
-        .byline { color: #6e5e8e; text-align: center; margin-bottom: 18px; }
-        .eyebrow {
-          text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem;
-          font-weight: 700; color: #b8923e; text-align: center; margin-top: 26px;
+        .lede {
+          font-size: 1.06rem;
+          max-width: 34em;
+          margin-bottom: 28px;
         }
-        /* Gate */
-        .gate { text-align: center; padding-top: 30px; }
-        .gate-copy { max-width: 30em; margin: 0 auto 22px; }
-        .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
-        .tab {
-          font-family: "Nunito Sans", sans-serif; font-size: 0.92rem; font-weight: 700;
-          background: transparent; border: 2px solid #e3cdd6; color: #6e5e8e;
-          border-radius: 999px; padding: 8px 18px; cursor: pointer;
-        }
-        .tab.active { background: #f3d9e3; border-color: #8e3b53; color: #5a2438; }
-        .form { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        input {
-          font-family: "Nunito Sans", sans-serif; font-size: 1rem;
-          padding: 13px 18px; border-radius: 999px; border: 2px solid #e3cdd6;
-          background: #fff; color: #3d2b33; min-width: 260px;
-        }
-        input:focus { border-color: #8e3b53; outline: none; }
+
+        /* Button */
         .button {
-          background: #8e3b53; color: #fbf6ef; font-weight: 700; border: none;
-          border-radius: 999px; padding: 13px 26px; font-size: 1rem; cursor: pointer;
+          display: inline-block;
+          background: #8e3b53;
+          color: #fbf6ef;
+          font-weight: 700;
+          text-decoration: none;
+          border: none;
+          border-radius: 999px;
+          padding: 14px 30px;
+          font-size: 1rem;
+          cursor: pointer;
           font-family: "Nunito Sans", sans-serif;
         }
-        .button:hover { background: #7a3247; }
-        .button:disabled { opacity: 0.6; cursor: wait; }
-        .sent { color: #5a7a4a; font-weight: 700; max-width: 30em; margin: 0 auto; }
-        .error { margin-top: 12px; color: #a33a3a; font-weight: 600; }
-        /* Dashboard */
-        .progress-line { text-align: center; color: #b8923e; font-weight: 700; margin-bottom: 8px; }
-        .cert-invite { text-align: center; color: #5a7a4a; font-weight: 700; margin-bottom: 8px; }
-        .cert-invite :global(a) { color: #8e3b53; }
-        .modules { list-style: none; margin-top: 22px; }
-        .mod { margin-bottom: 10px; }
-        .mod-link {
-          display: flex; align-items: center; gap: 16px; text-decoration: none;
-          background: #fff; border: 1px solid #f3d9e3; border-radius: 14px;
-          padding: 14px 18px;
+        .button:hover {
+          background: #7a3247;
         }
-        .mod-link:hover { border-color: #8e3b53; }
-        .mod-check {
-          flex: 0 0 38px; height: 38px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          background: #f3d9e3; color: #5a2438; font-weight: 700;
+        .button:disabled {
+          opacity: 0.6;
+          cursor: wait;
         }
-        .mod.done .mod-check { background: #dcebd3; color: #40632f; }
-        .mod-titles { display: flex; flex-direction: column; }
-        .mod-title { font-weight: 700; color: #5a2438; }
-        .mod-title-ar { font-size: 0.9rem; color: #6e5e8e; }
-        /* library */
-        .lib-head {
-          font-family: "Fraunces", serif; font-weight: 600; font-size: 1.15rem;
-          color: #5a2438; text-align: center; margin-bottom: 16px;
+
+        /* Divider */
+        .divider {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 8px 0;
         }
-        .lib {
-          display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 14px; margin-bottom: 10px;
+        .rule {
+          flex: 1;
+          height: 1px;
+          background: #e3cdd6;
+        }
+        .star {
+          color: #b8923e;
+          font-size: 1.1rem;
+        }
+
+        /* Course section */
+        .course {
+          padding: 56px 0;
+          text-align: center;
+        }
+        h2 {
+          font-family: "Fraunces", serif;
+          font-weight: 600;
+          font-size: clamp(1.5rem, 3vw, 2.1rem);
+          color: #5a2438;
+          margin-bottom: 8px;
+        }
+        .byline {
+          color: #6e5e8e;
+          font-weight: 600;
+          margin-bottom: 22px;
+        }
+        .course-copy {
+          max-width: 44em;
+          margin: 0 auto 18px;
+        
+        }
+        .price {
+          margin-top: 10px;
+          color: #8e3b53;
+          font-size: 1.05rem;
+        }
+        .pricing {
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-top: 26px;
+        }
+        .plan {
+          background: #fff;
+          border: 1px solid #f3d9e3;
+          border-radius: 16px;
+          padding: 26px 28px;
+          width: 300px;
+          text-align: center;
+        }
+        .plan.featured {
+          border: 2px solid #b8923e;
+        }
+        .plan-name {
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #b8923e;
+          margin-bottom: 8px;
+        }
+        .plan-price {
+          font-family: "Fraunces", serif;
+          font-size: 1.3rem;
+          color: #5a2438;
+          margin-bottom: 8px;
+        }
+        .plan-price strong {
+          font-size: 2rem;
+        }
+        .plan-copy {
+          font-size: 0.95rem;
+          margin-bottom: 18px;
+        }
+
+        /* Library */
+        .library {
+          padding: 56px 0;
+          text-align: center;
+        }
+        .library-note {
+          max-width: 40em;
+          margin: 0 auto 26px;
+        }
+        .lib-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: 14px;
+          text-align: left;
         }
         .lib-card {
-          background: #fff; border: 1px dashed #d9b9c6; border-radius: 14px;
-          padding: 18px; opacity: 0.92;
+          background: #fff;
+          border: 1px solid #f3d9e3;
+          border-radius: 14px;
+          padding: 18px;
         }
-        .lib-card.active {
-          border: 2px solid #8e3b53; background: #fdf1f5; opacity: 1;
-          text-decoration: none; display: block;
+        .lib-card.available {
+          border: 2px solid #8e3b53;
+          background: #fdf1f5;
         }
-        .lib-card.active:hover { background: #f9e3eb; }
-        .lib-soon.live { color: #8e3b53; }
-        .lib-soon {
-          text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.68rem;
-          font-weight: 700; color: #b8923e; margin-bottom: 6px;
+        .lib-tag {
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-size: 0.68rem;
+          font-weight: 700;
+          color: #8e3b53;
+          margin-bottom: 6px;
         }
-        .lib-title { font-weight: 700; color: #5a2438; }
-        .lib-title-ar { font-size: 0.9rem; color: #6e5e8e; margin-bottom: 6px; }
-        .lib-blurb { font-size: 0.9rem; color: #3d2b33; }
+        .lib-name {
+          font-weight: 700;
+          color: #5a2438;
+        }
+        .lib-name-ar {
+          font-size: 0.9rem;
+          color: #6e5e8e;
+          margin-bottom: 6px;
+        }
+        .lib-desc {
+          font-size: 0.9rem;
+        }
+
+        /* Library catalog */
+        .library {
+          padding: 56px 0;
+          text-align: center;
+        }
+        .library-lede {
+          text-align: center;
+          margin-bottom: 26px;
+        }
+        .cat {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: 14px;
+          text-align: left;
+        }
+        .cat-card {
+          background: #fff;
+          border: 1px solid #f3d9e3;
+          border-radius: 14px;
+          padding: 18px;
+        }
+        .cat-title {
+          font-weight: 700;
+          color: #5a2438;
+        }
+        .cat-title-ar {
+          font-size: 0.9rem;
+          color: #6e5e8e;
+          margin-bottom: 6px;
+        }
+        .cat-blurb {
+          font-size: 0.9rem;
+        }
+
+        /* Capture */
+        .capture {
+          padding: 56px 0 64px;
+          text-align: center;
+        }
+        .capture-copy {
+          max-width: 38em;
+          margin: 14px auto 28px;
+        }
+        .form {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        input[type="email"] {
+          font-family: "Nunito Sans", sans-serif;
+          font-size: 1rem;
+          padding: 13px 18px;
+          border-radius: 999px;
+          border: 2px solid #e3cdd6;
+          background: #fff;
+          color: #3d2b33;
+          min-width: 280px;
+        }
+        input[type="email"]:focus {
+          border-color: #8e3b53;
+          outline: none;
+        }
+        .thanks {
+          font-weight: 700;
+          color: #5a7a4a;
+          font-size: 1.05rem;
+        }
+        .error {
+          margin-top: 12px;
+          color: #a33a3a;
+          font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+          border-top: 1px solid #e3cdd6;
+          padding: 28px 0 40px;
+          text-align: center;
+          color: #6e5e8e;
+        }
+        .footer-small {
+          font-size: 0.85rem;
+          margin-top: 6px;
+        }
+
+        /* Mobile */
+        @media (max-width: 760px) {
+          .hero {
+            flex-direction: column-reverse;
+            gap: 32px;
+            padding: 28px 0 40px;
+            text-align: center;
+          }
+          .hero-art {
+            max-width: 280px;
+          }
+          .course-copy {
+            text-align: center;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            transition: none !important;
+          }
+        }
       `}</style>
     </>
   );
