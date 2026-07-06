@@ -28,10 +28,10 @@ async function main() {
   const posts = pool.posts || [];
   if (posts.length === 0) throw new Error("Empty posts pool");
 
-  const now = new Date();
-  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
-  const dayOfYear = Math.floor((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - start) / 86400000);
-  const msg = posts[dayOfYear % posts.length];
+  // Counter-based rotation: every run posts the NEXT item in the pool,
+  // so repeated or manual runs can never duplicate a post.
+  const counter = await redis(["INCR", "tvg:community:pool-index"]);
+  const msg = posts[(counter - 1) % posts.length];
 
   const entry = {
     id: `auto-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
