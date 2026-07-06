@@ -50,6 +50,13 @@ export default function Chapter({ idx }) {
   const [marked, setMarked] = useState(false);
   const utterRef = useRef(null);
 
+  // reset per-chapter state when navigating between chapters
+  useEffect(() => {
+    setAnswers({});
+    setMarked(false);
+    setReading(false);
+  }, [idx]);
+
   // stop speech when leaving the page or switching language
   useEffect(() => {
     return () => {
