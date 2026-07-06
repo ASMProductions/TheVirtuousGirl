@@ -173,6 +173,19 @@ export default function CourseHome({ authed }) {
               ))}
             </div>
 
+            <p className="eyebrow">The Sisterhood</p>
+            <div className="lib">
+              <Link href="/course/community" className="lib-card active">
+                <p className="lib-soon live">Open now</p>
+                <p className="lib-title">Our Community</p>
+                <p className="lib-title-ar">مجتمعنا</p>
+                <p className="lib-blurb">
+                  Share, ask, and encourage one another — a gentle room for
+                  mothers and daughters.
+                </p>
+              </Link>
+            </div>
+
             <p className="eyebrow">Resource Library</p>
             <div className="lib">
               <div className="lib-card">
