@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Head from "next/head";
+import catalog from "../data/catalog";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -97,7 +98,7 @@ export default function Home() {
 
         {/* ===== Course One ===== */}
         <section className="course">
-          <p className="eyebrow">Course One — opening soon</p>
+          <p className="eyebrow">Course One — ready for her today</p>
           <h2>The Muslim Girl: A Guide to Puberty and Purity</h2>
           <p className="byline">by Fatima Ezzahra Muhammad</p>
           <p className="course-copy">
@@ -171,8 +172,72 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <p className="price">Enrollment opens soon.</p>
+            <p className="price">
+              Enrollment: <strong>$9</strong>/month · <strong>$97</strong>/year ·{" "}
+              <strong>$197</strong> lifetime
+            </p>
           )}
+        </section>
+
+        <div className="divider" aria-hidden="true">
+          <span className="rule" />
+          <span className="star">✦</span>
+          <span className="rule" />
+        </div>
+
+        {/* ===== The Library ===== */}
+        <section className="library">
+          <p className="eyebrow">The Library</p>
+          <h2>One enrollment. Every course.</h2>
+          <p className="library-note">
+            Your enrollment covers the whole library &mdash; from her first
+            hygiene lessons to marriage, motherhood, and running a home. New
+            courses are added to the library throughout the year.
+          </p>
+          <div className="lib-grid">
+            <div className="lib-card available">
+              <p className="lib-tag">Available now</p>
+              <p className="lib-name">The Muslim Girl: A Guide to Puberty and Purity</p>
+              <p className="lib-name-ar">الفتاة المسلمة: دليل البلوغ والطهارة</p>
+              <p className="lib-desc">
+                12 illustrated chapters for girls 8 and up &mdash; her body, her
+                care, her deen, her confidence.
+              </p>
+            </div>
+            {catalog.map((c) => (
+              <div key={c.title} className="lib-card">
+                <p className="lib-name">{c.title}</p>
+                <p className="lib-name-ar">{c.titleAr}</p>
+                <p className="lib-desc">{c.blurb}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="divider" aria-hidden="true">
+          <span className="rule" />
+          <span className="star">✦</span>
+          <span className="rule" />
+        </div>
+
+        {/* ===== The Library ===== */}
+        <section className="library">
+          <p className="eyebrow">The Library</p>
+          <h2>One enrollment. Her whole journey.</h2>
+          <p className="course-copy library-lede">
+            The Virtuous Girl is built as a complete path from girlhood to
+            womanhood. Your enrollment includes every course in the library as
+            it grows — beginning with Course One, available now.
+          </p>
+          <div className="cat">
+            {catalog.map((c) => (
+              <div key={c.title} className="cat-card">
+                <p className="cat-title">{c.title}</p>
+                <p className="cat-title-ar">{c.titleAr}</p>
+                <p className="cat-blurb">{c.blurb}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <div className="divider" aria-hidden="true">
@@ -458,6 +523,86 @@ export default function Home() {
         .plan-copy {
           font-size: 0.95rem;
           margin-bottom: 18px;
+        }
+
+        /* Library */
+        .library {
+          padding: 56px 0;
+          text-align: center;
+        }
+        .library-note {
+          max-width: 40em;
+          margin: 0 auto 26px;
+        }
+        .lib-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: 14px;
+          text-align: left;
+        }
+        .lib-card {
+          background: #fff;
+          border: 1px solid #f3d9e3;
+          border-radius: 14px;
+          padding: 18px;
+        }
+        .lib-card.available {
+          border: 2px solid #8e3b53;
+          background: #fdf1f5;
+        }
+        .lib-tag {
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-size: 0.68rem;
+          font-weight: 700;
+          color: #8e3b53;
+          margin-bottom: 6px;
+        }
+        .lib-name {
+          font-weight: 700;
+          color: #5a2438;
+        }
+        .lib-name-ar {
+          font-size: 0.9rem;
+          color: #6e5e8e;
+          margin-bottom: 6px;
+        }
+        .lib-desc {
+          font-size: 0.9rem;
+        }
+
+        /* Library catalog */
+        .library {
+          padding: 56px 0;
+          text-align: center;
+        }
+        .library-lede {
+          text-align: center;
+          margin-bottom: 26px;
+        }
+        .cat {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: 14px;
+          text-align: left;
+        }
+        .cat-card {
+          background: #fff;
+          border: 1px solid #f3d9e3;
+          border-radius: 14px;
+          padding: 18px;
+        }
+        .cat-title {
+          font-weight: 700;
+          color: #5a2438;
+        }
+        .cat-title-ar {
+          font-size: 0.9rem;
+          color: #6e5e8e;
+          margin-bottom: 6px;
+        }
+        .cat-blurb {
+          font-size: 0.9rem;
         }
 
         /* Capture */
