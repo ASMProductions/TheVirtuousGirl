@@ -1,10 +1,11 @@
-// POST /api/leads — stores email in Redis, then sends the Mother's Checklist.
+// POST /api/leads — stores email in Redis, initializes sequence tracking, then sends the Mother's Checklist.
 // Redis: raw fetch with POST body format (colon-safe), per established Upstash pattern.
 // Email: HostGator SMTP via nodemailer (noreply@thevirtuousgirl.com).
 
 import nodemailer from "nodemailer";
 
 const SITE = "https://thevirtuousgirl.com";
+const FUNNEL_KEY = "mothers-checklist";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Please enter a valid email address." });
   }
 
-  // 1) Store the lead
+  // 1) Store the lead in pending set
   try {
     const r = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
       method: "POST",
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(["SADD", "leads:mothers-checklist", clean]),
+      body: JSON.stringify(["SADD", `sequence:${FUNNEL_KEY}:pending`, clean]),
     });
     if (!r.ok) throw new Error("Redis request failed");
   } catch (err) {
@@ -35,7 +36,33 @@ export default async function handler(req, res) {
       .json({ error: "Something went wrong. Please try again." });
   }
 
-  // 2) Send the checklist email (lead is already saved; email failure is non-fatal)
+  // 2) Initialize sequence tracking data
+  try {
+    const subscriberData = {
+      email: clean,
+      signup_timestamp: Math.floor(Date.now() / 1000),
+      current_step: 0,
+      sent_emails: [0], // Email 1 (step 0) is sent immediately with PDF
+    };
+
+    await fetch(process.env.UPSTASH_REDIS_REST_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([
+        "SET",
+        `sequence:${FUNNEL_KEY}:data:${clean}`,
+        JSON.stringify(subscriberData),
+      ]),
+    });
+  } catch (err) {
+    console.error("Sequence tracking initialization failed:", err.message);
+    // Non-fatal; continue to email send
+  }
+
+  // 3) Send the checklist email (lead is already saved; email failure is non-fatal)
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
