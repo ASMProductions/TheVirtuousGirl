@@ -1,12 +1,12 @@
-// pages/api/stripe-webhook.js — grants/revokes course access
-// checkout.session.completed  -> SADD tvg:members {email}
-// customer.subscription.deleted -> SREM tvg:members {email}
+// pages/api/stripe-webhook.js — grants AND revokes course access for The Virtuous Girl
+// checkout.session.completed -> SADD tvg:members {email}
+// charge.refunded / customer.subscription.deleted
+//   -> SREM tvg:members {email} + destroy all active TVG sessions for that email
+// SEPARATE SYSTEM — TVG keys only. Cannot touch MLF or IL access.
 // Env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
 
 import Stripe from "stripe";
-
 export const config = { api: { bodyParser: false } };
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 async function redis(cmd) {
@@ -31,6 +31,35 @@ function rawBody(req) {
   });
 }
 
+async function revokeAccess(email) {
+  const clean = email.toLowerCase().trim();
+  // 1. Remove membership — no new magic links can be issued
+  await redis(["SREM", "tvg:members", clean]);
+  // 2. Kill every active session — existing 30-day logins stop working immediately
+  try {
+    const tokens = await redis(["SMEMBERS", `tvg:sessions:${clean}`]);
+    if (Array.isArray(tokens)) {
+      for (const t of tokens) {
+        await redis(["DEL", `tvg:session:${t}`]);
+      }
+    }
+    await redis(["DEL", `tvg:sessions:${clean}`]);
+  } catch (err) {
+    console.error("Session revocation error:", err.message);
+  }
+  console.log("TVG access revoked:", clean);
+}
+
+async function emailFromCustomer(customerId) {
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    return customer.email || null;
+  } catch (err) {
+    console.error("Could not retrieve customer:", err.message);
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -51,6 +80,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ---- GRANTS ----
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       const email = (
@@ -66,16 +96,17 @@ export default async function handler(req, res) {
       }
     }
 
+    // ---- REVOCATIONS ----
+    if (event.type === "charge.refunded") {
+      const charge = event.data.object;
+      let email = charge.billing_details?.email || charge.receipt_email;
+      if (!email && charge.customer) email = await emailFromCustomer(charge.customer);
+      if (email) await revokeAccess(email);
+    }
     if (event.type === "customer.subscription.deleted") {
       const sub = event.data.object;
-      if (sub.customer) {
-        const customer = await stripe.customers.retrieve(sub.customer);
-        const email = (customer.email || "").toLowerCase().trim();
-        if (email) {
-          await redis(["SREM", "tvg:members", email]);
-          console.log("Access revoked (subscription ended):", email);
-        }
-      }
+      const email = await emailFromCustomer(sub.customer);
+      if (email) await revokeAccess(email);
     }
   } catch (err) {
     console.error("Webhook handling error:", err.message);

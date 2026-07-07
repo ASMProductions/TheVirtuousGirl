@@ -3,6 +3,7 @@
 // POST { email } -> if member (tvg:members set), email a magic link
 // GET  ?token=x  -> validate one-time login token, set cookie, redirect /course
 // Sessions: tvg:session:{token} -> identity, 30-day expiry.
+// Session index: tvg:sessions:{email} -> set of session tokens (for refund revocation).
 // Uses raw Upstash fetch (command-in-body) per established pattern.
 
 import nodemailer from "nodemailer";
@@ -45,13 +46,14 @@ export default async function handler(req, res) {
         return res.redirect("/course?error=expired");
       }
       const session = newToken();
-      await redis([
-        "SET",
-        `tvg:session:${session}`,
-        identity,
-        "EX",
-        String(SESSION_DAYS * 24 * 60 * 60),
-      ]);
+      const ttl = String(SESSION_DAYS * 24 * 60 * 60);
+      await redis(["SET", `tvg:session:${session}`, identity, "EX", ttl]);
+      // Index sessions by email so a refund can revoke them instantly.
+      // (Access-code identities like "code:X" are not indexed.)
+      if (identity.includes("@")) {
+        await redis(["SADD", `tvg:sessions:${identity}`, session]);
+        await redis(["EXPIRE", `tvg:sessions:${identity}`, ttl]);
+      }
       res.setHeader("Set-Cookie", sessionCookie(session));
       return res.redirect("/course");
     } catch {
